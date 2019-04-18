@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::Server"
-               BuildableName = "Server"
-               BlueprintName = "Server"
+               BlueprintIdentifier = "echoserver::Service"
+               BuildableName = "Service.framework"
+               BlueprintName = "Service"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -42,9 +42,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::Service"
-               BuildableName = "Service.framework"
-               BlueprintName = "Service"
+               BlueprintIdentifier = "echoserver::Server"
+               BuildableName = "Server"
+               BlueprintName = "Server"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
