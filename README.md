@@ -28,7 +28,7 @@ Stop the server in Xcode.  At a terminal prompt, build a docker container for th
 
 `build-amd64.sh`
 
-The build step is two lines long and provided in this form for clarity.  This script will cross-compile the exact same swift code that you ran under Xcode to the amd-64 architecture and then produce a docker image called _echoserver_.  Verify this by running 
+The build step is two lines long and provided in this form for clarity.  This script will cross-compile the exact same swift code that you ran under Xcode to a linux, amd-64 architecture and then produce a docker image called _echoserver_.  Verify this by running 
 
 `docker images`
 
@@ -36,13 +36,15 @@ You should see a docker image named: _echoserver:amd64-latest_.  It should be <1
 
 `run-amd64.sh`
 
-That command will automatically pull and run the _swift_runtime:amd64-latest_ docker container which contains all of the shlibs necessary to run the cross-compiled _echoserver_.    Note that _swift_runtime_ starts, copies the necessary runtime files into a docker volume, prints a success message (via a program written in swift) and then exits.  
+Again the script is short and is provided so that you can easily see what’s going on. That command will automatically pull and run the _cscix65g/swift_runtime:amd64-latest_ docker container which contains all of the shlibs necessary to run the cross-compiled _echoserver_.    Note that _swift_runtime_ starts, copies the necessary runtime files into three docker volumes, prints a success message (via a program written in swift) and then exits.  What matters here is that we have all of the shlibs required by the echoserver be available in known location for the echoserver docker container.
 
-The script will then run the echoserver.  Verify this by executing:
+The run script will then start the echoserver image in a docker container mounting the correct runtime dependencies from the swift_runtime container.  Verify this by executing:
 
 `docker ps —all`
 
-You should see that _swift_runtime_ is present but exited and that _echoserver_ is running successfully.  
+You should see that `swift_runtime` is present but exited and that `echoserver` is running successfully.  
+
+Note that swift_runtime is now available to be used by _ANY_ docker container, e.g. an application you would write in this style.  Another example which we will explore below is the lldb-server which will mount these same libs so that you can run a debugger remotely on your cross-compiled code.
 
 Test the echo server as above:
 
@@ -64,7 +66,7 @@ Build the docker container with:
 
 `build-arm64.sh`
 
-This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the _run-arm64.sh_ and `test.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `test.sh` above.
+This will produce a docker image called `echoserver:arm64-latest`.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the `run-arm64.sh` and `test.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `test.sh` above.
 
 ## Debugging
 
@@ -80,7 +82,7 @@ CONTAINER ID        IMAGE                                 COMMAND               
 44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
 
 ```
-Note that this process will use the 8080 port and therefore be incompatible with running the echoserver container at the same time.  If you want to play with the debugger, you’ll need to kill the echoserver with `docker stop echoserver` .  If the lldb_server instance is up, then you can do the following:
+Note that this process will use the 8080 port and therefore be incompatible with running the `echoserver` container at the same time.  If you want to play with the debugger, you’ll need to kill the `echoserver` with `docker stop echoserver` .  If the lldb_server instance is up, then you can do the following:
 
 ` lldb ./.build/x86_64-unknown-linux/debug/echoserver`
 
@@ -132,7 +134,7 @@ Process 20 stopped
 Target 0: (echoserver) stopped.
 ```
 
-You are now debugging the echo server running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then, back on your mac, at the connect command in lldb, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
+You are now debugging the `echoserver` running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then, back on your mac, at the connect command in lldb, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
 
 *NB* there is no need to copy the arm executable from the mac to the Pi as lldb on your mac will copy it as part of running it.  (This is one _really_ good reason for making your executables very small, the copy process is painfully slow).
 
