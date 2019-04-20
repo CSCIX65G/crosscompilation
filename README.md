@@ -132,11 +132,28 @@ Target 0: (echoserver) stopped.
 
 You are now debugging the echo server running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then at the connect command in lldb on your mac, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
 
-*NB* there is no need to copy the arm executable from the mac to the Pi.  Start lldb as above with the command:
+*NB* there is no need to copy the arm executable from the mac to the Pi.  On your _mac_ build the Pi executable with the command:
 
-`lldb ./.build/aarch64-unknown-linux/debug/echoserver`
+```
+./build-arm64.sh
+```
 
-And follow the steps as above.
+And follow the steps as above with the following changes:
+
+```
+lldb ./.build/aarch64-unknown-linux/debug/echoserver
+```
+
+Once in lldb do:
+
+```
+env LD_LIBRARY_PATH=/swift_runtime//usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu
+platform connect  connect://[IP or FQDN of your R/Pi]:9293
+break set --file main.swift --line 32
+run
+```
+
+Note the changes to the LD_LIBRARY_PATH.  These are to account for the fact that you are debugging on a different architecture.
 
 ## Explanation
 
