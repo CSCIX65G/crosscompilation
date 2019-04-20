@@ -48,11 +48,11 @@ Test the echo server as above:
 
 `test.sh`
 
-Congrats, you have successfully cross-compiled for amd64.  This docker image can be deployed to any amd64 cloud image if you like.
+Congrats, you have successfully cross-compiled for amd64.  This docker image can be deployed to any amd64 cloud image (with docker installed) if you like by simply running the commands in the run script.
 
 ## Running in Docker on the Raspberry Pi
 
-*NB* For now, you _*MUST*_ be running a 64 bit OS such as Ubuntu or Debian on your Pi to follow these steps.   Also note that which 64-bit OS you are running is immaterial.  Also note that everything _should_ run on any single board computer with an arm64v8 processor provided you are running a 64-bit LInux OS and have docker installed.
+*NB* For now, you _*MUST*_ be running a 64 bit OS such as Ubuntu or Debian on your Pi to follow these steps.   Also note that which 64-bit OS you are running is immaterial.  Also note that everything _should_ run on any single board computer with an arm64v8 processor provided you are running a 64-bit LInux OS and have docker installed, because the entire process is independent of the underlying OS.
  
 Unfortunately, I’m still working on the 32-bit version of the cross compiler. There don’t seem to be insuperable difficulties here, I just need to figure out which pieces are missing and build the cross-compiler and docker run-time images.  Sorry, but such is life in the open source world.
 
@@ -62,7 +62,7 @@ Build the docker container with:
 
 `build-arm64.sh`
 
-This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.  Also move the _run-arm64.sh_ script to the Pi.  On your Pi, run the script.  Test as above.
+This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.  Also move the _run-arm64.sh_ and `test.sh` scripts to the Pi.  On your Pi, execute the run script.  Test as above.
 
 ## Debugging
 
@@ -70,7 +70,7 @@ On your mac, do the following:
 
 `debug-server-amd64.sh`
 
-You should see:
+`docker ps —all` should the produce output like:
 
 ```
 CONTAINER ID        IMAGE                                 COMMAND                  CREATED             STATUS                      PORTS                                                      NAMES
@@ -78,7 +78,7 @@ CONTAINER ID        IMAGE                                 COMMAND               
 44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
 
 ```
-If the lldb_server instance is up, then you can do the following:
+Note that this process will use the 8080 port and be incompatible with running the echoserver container at the same time.  You’ll need to kill it with `docker stop echoserver` if you want to play with the debugger.  If the lldb_server instance is up, then you can do the following:
 
 ` lldb ./.build/x86_64-unknown-linux/debug/echoserver`
 
@@ -156,7 +156,7 @@ That’s the current state of the world.  Will be interested in people’s feedb
 
 ## To do
 
-1. The next big to do is to get all of this working with VS Code.  I’ve tried getting [this](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) working, but so far no dice with remote lldb debugging.  If it could be combined with [this](https://marketplace.visualstudio.com/items?itemName=vknabel.vscode-swift-development-environment) we’d have a decent Mac IDE for swift.
+1. The next big to do is to get all of this working with VS Code.  I’ve tried getting [this](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) working, but so far no dice with remote lldb debugging.  If it could be combined with [this](https://marketplace.visualstudio.com/items?itemName=vknabel.vscode-swift-development-environment) we’d have a decent Mac IDE for swift.  The big thing on the debugger is that it seems to not understand the remote commands properly.
 
 2. Extend the previous lld-server work I did in January to run distro-less on all platforms as well.
  
