@@ -28,23 +28,32 @@ Stop the server in Xcode.  At a terminal prompt, build a docker container for th
 
 `build-amd64.sh`
 
-The build step is two lines long and provided in this form for clarity.  This script will cross-compile the exact same swift code that you ran under Xcode to a linux, amd-64 architecture and then produce a docker image called _echoserver_.  Verify this by running 
+The build step is two lines long and provided in this form for clarity.  This script will cross-compile the exact same swift code that you ran under Xcode to a linux, amd-64 architecture and then produce a docker image called `echoserver`.  Verify this by running 
 
 `docker images`
 
-You should see a docker image named: _echoserver:amd64-latest_.  It should be <10MB in size.  Run that image by executing:
+You should see a docker image named: `echoserver:amd64-latest`.  It should be <10MB in size.  Run that image by executing:
 
 `run-amd64.sh`
 
-Again the script is short and is provided so that you can easily see what’s going on. That command will automatically pull and run the _cscix65g/swift_runtime:amd64-latest_ docker container which contains all of the shlibs necessary to run the cross-compiled _echoserver_.    Note that _swift_runtime_ starts, copies the necessary runtime files into three docker volumes, prints a success message (via a program written in swift) and then exits.  What matters here is that we have all of the shlibs required by the echoserver be available in known location for the echoserver docker container.
+Again the script is short and is provided so that you can easily see what’s going on. That command will automatically pull and run the _cscix65g/swift_runtime:amd64-latest_ docker container which contains all of the shlibs necessary to run the cross-compiled `echoserver`.    Note that `swift_runtime` starts, copies the necessary runtime files into three docker volumes, prints a success message (via a program written in swift which dynamically links against the same libs in the container) and then exits.  What matters here is that  all of the shlibs required by the `echoserver` be available in known locations for the `echoserver` docker container.
 
-The run script will then start the echoserver image in a docker container mounting the correct runtime dependencies from the swift_runtime container.  Verify this by executing:
+The run script will then start the `echoserver` image in a docker container, mounting the correct runtime dependencies from the `swift_runtime` container.  Verify this by executing:
 
 `docker ps —all`
 
-You should see that `swift_runtime` is present but exited and that `echoserver` is running successfully.  
+You should see that `swift_runtime` is present in an _exited_ state and that `echoserver` is running successfully.  
 
-Note that swift_runtime is now available to be used by _ANY_ docker container, e.g. an application you would write in this style.  Another example which we will explore below is the lldb-server which will mount these same libs so that you can run a debugger remotely on your cross-compiled code.
+Note that `swift_runtime` is now available to be used by _ANY_ docker container, e.g. an application you would write in this style.  Such an application simply has to do `—volumes-from swift_runtime` in the ‘distro-less’ case or include:
+
+    -v swift_runtime_lib:/swift_runtime/lib \
+    -v swift_runtime_usr_lib:/swift_runtime/usr/lib \
+    -v swift_runtime_usr_bin:/swift_runtime/usr/bin \
+    --env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu \
+
+When running a distro container, in order to have the appropriate shlibs available to swift programs.
+
+Another example which we will explore below is the lldb-server which will mount these same libs so that you can run a debugger remotely on your cross-compiled code.
 
 Test the echo server as above:
 
@@ -150,16 +159,16 @@ And follow the steps as above with the following changes:
 lldb ./.build/aarch64-unknown-linux/debug/echoserver
 ```
 
-Once in lldb do:
+Once in lldb do the following 4 commands:
 
 ```
-env LD_LIBRARY_PATH=/swift_runtime//usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu
+env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu
 platform connect  connect://[IP or FQDN of your R/Pi]:9293
 break set --file main.swift --line 32
 run
 ```
 
-Note the changes to the LD_LIBRARY_PATH.  These are to account for the fact that you are debugging on a different architecture.
+Note the changes to the LD_LIBRARY_PATH from the amd64 case.  These are to account for the fact that you are debugging on a different architecture.
 
 ## Explanation
 
