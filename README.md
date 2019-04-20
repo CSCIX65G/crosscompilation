@@ -1,11 +1,13 @@
 # Cross compilation of Swift for ARM64 and AMD64
 
 ## Prerequisites
-You must have:
+You must have installed on your mac:
 
-1.  Xcode 10.2 installed (or be using a swift 5 toolchain in 10.1)
+1.  Xcode 10.2  (or be using a swift 5 toolchain in 10.1)
 
-2.  Docker installed on your mac
+2.  Docker 
+ 
+3.  A clone of this repo
 
 Then, get and install the arm64 and amd64 cross compilers on your mac:
 
