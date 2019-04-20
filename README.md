@@ -36,7 +36,7 @@ You should see a docker image named: `echoserver:amd64-latest`.  It should be <1
 
 `run-amd64.sh`
 
-Again the script is short and is provided so that you can easily see what’s going on. That command will automatically pull and run the _cscix65g/swift_runtime:amd64-latest_ docker container which contains all of the shlibs necessary to run the cross-compiled `echoserver`.    Note that `swift_runtime` starts, copies the necessary runtime files into three docker volumes, prints a success message (via a program written in swift which dynamically links against the same libs in the container) and then exits.  What matters here is that  all of the shlibs required by the `echoserver` be available in known locations for the `echoserver` docker container.
+Again the script is short and is provided so that you can easily see what’s going on. That command will automatically pull and run the `cscix65g/swift_runtime:amd64-latest` docker container which contains all of the shlibs necessary to run the cross-compiled `echoserver`.    Note that `swift_runtime` starts, copies the necessary runtime files into three docker volumes, prints a success message (via a program written in swift which dynamically links against the same libs in the container) and then exits.  What matters here is that  all of the shlibs required by the `echoserver` be available in known locations for the `echoserver` docker container.
 
 The run script will then start the `echoserver` image in a docker container, mounting the correct runtime dependencies from the `swift_runtime` container.  Verify this by executing:
 
@@ -71,13 +71,13 @@ Unfortunately, I’m still working on the 32-bit version of the cross compiler. 
 
 The process here is pretty much the same, only we have to move the docker image to the Pi to test.  I’ll have to leave that part as an exercise for the reader, since your mileage may vary, but the steps up to deployment are pretty much the same.  
 
-Build the docker container with:
+On your mac, build the arm64 docker container with:
 
 `build-arm64.sh`
 
 This will produce a docker image called `echoserver:arm64-latest`.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the `run-arm64.sh` and `test.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `test.sh` above.
 
-## Debugging
+## Debugging on the Mac
 
 To debug the amd64 code on your mac, do the following:
 
@@ -91,11 +91,13 @@ CONTAINER ID        IMAGE                                 COMMAND               
 44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
 
 ```
-Note that this process will use the 8080 port and therefore be incompatible with running the `echoserver` container at the same time.  If you want to play with the debugger, you’ll need to kill the `echoserver` with `docker stop echoserver` .  If the lldb_server instance is up, then you can do the following:
+Note that we now have a container called `lld-server`.  Also note that we have started this process will claiming  the 8080 port and that it is therefore incompatible with running the `echoserver` container at the same time.  If you want to play with the debugger, you’ll need to kill the `echoserver` with `docker stop echoserver` .  
+
+Once the lldb_server instance is up, then you can do the following:
 
 ` lldb ./.build/x86_64-unknown-linux/debug/echoserver`
 
-Once lldb has launched, do the following:
+Once lldb has launched, and you have the lldb command prompt, do the following 6 lines:
 ```
 env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/x86_64-linux-gnu:/swift_runtime/lib/x86_64-linux-gnu
 platform connect connect://0.0.0.0:9293
@@ -104,7 +106,7 @@ break set --file main.swift --line 32
 run
 ```
 
-You should see output like:
+After a pause, during which time lldb is copying your executable to the remote device, you should see output like:
 
 ```
 Process 20 launched: '/Users/rvs/Development/Projects/HarvardExtension/crosscompilation/.build/x86_64-unknown-linux/debug/echoserver' (x86_64)
@@ -143,23 +145,25 @@ Process 20 stopped
 Target 0: (echoserver) stopped.
 ```
 
-You are now debugging the `echoserver` running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then, back on your mac, at the connect command in lldb, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
+You are now debugging the `echoserver` running inside a docker container on your mac.  
 
-*NB* there is no need to copy the arm executable from the mac to the Pi as lldb on your mac will copy it as part of running it.  (This is one _really_ good reason for making your executables very small, the copy process is painfully slow).
+## Debugging on the Pi
 
-On your _mac_ build the Pi executable with the command:
+To do this on your Pi, you  need to transport the `debug-server-arm64.sh` script to your Pi and run it.  This will download `swift_runtime` and  `lldb-server` for your Pi.  As before `swift_runtime` will have exited and `lldb-server` will be running.  Both `swift_runtime` and `lldb-server` are the versions particular to the Pi.  You will remotely connect to this lldb-server from your mac. 
+
+On your _mac_ build the R/Pi executable with the command:
 
 ```
 ./build-arm64.sh
 ```
 
-And follow the steps as above with the following changes:
+Then, _while still on your mac_, run lldb again as follows:
 
 ```
 lldb ./.build/aarch64-unknown-linux/debug/echoserver
 ```
 
-Once in lldb do the following 4 commands:
+And follow the steps as above with the following commands in lldb:
 
 ```
 env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu
@@ -168,21 +172,25 @@ break set --file main.swift --line 32
 run
 ```
 
-Note the changes to the LD_LIBRARY_PATH from the amd64 case.  These are to account for the fact that you are debugging on a different architecture.
+Note the changes to the `LD_LIBRARY_PATH` from the amd64 case.  These are to account for the fact that you are debugging on a different architecture.  At the `connect` command you are substituting the hostname or IP address of your Pi.  The `env` command is noting that on the Pi, the paths to libraries are slightly different.
+
+*NB* there is no need to copy the arm executable from the mac to the Pi for debugging as we did in the normal mode. This is because `lldb` on your mac will copy it as part of running it.  (This is one _really_ good reason for making your executables very small, the copy process is painfully slow).
+
+
 
 ## Explanation
 
-So what’s happening here is that I have modified the work of Johannes Weiss and Helge Hess to create the cross compilers.  If you are curious about how that works the repo is [here](https://github.com/CSCIX65G/swift-mac2arm-x-compile-toolchain) . 
+So what’s happening here is that I have modified the work of Johannes Weiss and Helge Hess to create the cross compilers.  If you are curious about how that works, the repo is [here](https://github.com/CSCIX65G/swift-mac2arm-x-compile-toolchain) . 
 
 One of the outputs of that process, when the cross compilers are built for Ubuntu 18.04 (bionic), is that all of the shlibs that Swift requires in order to link swift-compiled programs at run time on bionic can be determined by looking at the libraries produced in the cross-compiler SDK and can then be downloaded and assembled into a single runtime.tar.gz file.  
 
 Note that, ubuntu 18.04 is *NOT* required as part of all this.  (Well ok at the moment a minimal ubuntu is needed for the lldb-server, but even that is unmodified and should go away soon(ish)). 
 
-The idea is to run swift programs without the weight of a full linux distribution (i.e. distro-less).  Once we provide a complete set of libs drawn from any OS, then it is as if we had statically linked the executable, only we don’t have to include those libs in every docker image.
+The idea is to run swift programs without the weight of a full linux distribution (i.e. distro-less).  Once we provide a complete set of libs drawn from any OS, then it is as if we had statically linked the executable, only we don’t have to include those libs in every docker image. (Hence the name - _shared library_)
 
-To do that we construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo also hosts docker images which can be used to remotely debug cross-compiled swift programs as well.
+To do that we construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo also hosts docker images which can be used to remotely debug cross-compiled swift programs as well.  Because most of lldb, including the `lldb-server` executable, is embedded in the `swift_runtime` image, the lldb docker image becomes vanishingly thin.
 
-Once we can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes, then you can run fast, small and secure swift applications.
+Once we can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes, _then_ we can run fast, small and secure swift applications.
 
 That’s the current state of the world.  Will be interested in people’s feedback.
 
