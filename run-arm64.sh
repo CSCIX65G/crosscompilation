@@ -22,4 +22,8 @@ if [ ! "$(docker ps --all -q -f name=swift_runtime)" ]; then
     docker run --name swift_runtime -v swift_runtime_lib:/lib -v swift_runtime_usr_lib:/usr/lib -v swift_runtime_usr_bin:/usr/bin -d cscix65g/swift-runtime:arm64-latest
     docker logs swift_runtime
 fi
+docker stop echoserver || true >> /dev/null
 docker run --rm -d --name echoserver -p 8080:8080 --volumes-from swift_runtime cscix65g/echoserver:arm64-latest
+docker ps --filter name=echoserver
+docker logs echoserver
+
