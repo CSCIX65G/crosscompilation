@@ -64,15 +64,91 @@ Build the docker container with:
 
 This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.  Also move the _run-arm64.sh_ script to the Pi.  On your Pi, run the script.  Test as above.
 
+## Debugging
+
+On your mac, do the following:
+
+`debug-server-amd64.sh`
+
+You should see:
+
+```
+CONTAINER ID        IMAGE                                 COMMAND                  CREATED             STATUS                      PORTS                                                      NAMES
+4100fd7bbf7c        cscix65g/lldb-server:amd64-latest     "/swift_runtime/usr/…"   19 minutes ago      Up 19 minutes               0.0.0.0:8080->8080/tcp, 0.0.0.0:9293-9296->9293-9296/tcp   lldb_server
+44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
+
+```
+If the lldb_server instance is up, then you can do the following:
+
+` lldb ./.build/x86_64-unknown-linux/debug/echoserver`
+
+Once lldb has launched, do the following:
+```
+env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/x86_64-linux-gnu:/swift_runtime/lib/x86_64-linux-gnu
+platform connect connect://0.0.0.0:9293
+platform select remote-linux
+break set --file main.swift --line 32
+run
+```
+
+You should see output like:
+
+```
+Process 20 launched: '/Users/rvs/Development/Projects/HarvardExtension/crosscompilation/.build/x86_64-unknown-linux/debug/echoserver' (x86_64)
+Process 20 stopped
+* thread #1, name = 'echoserver', stop reason = breakpoint 1.1
+    frame #0: 0x00005555557aa452 echoserver`main at main.swift:32:11
+   17  	let services = [
+   18  	    (path: "/echo", method: HTTPMethod.POST, type: EchoService.self)
+   19  	]
+   20  	
+   21  	func createHandlerSelector() -> HandlerSelector {
+   22  	    var handlerSelector = HandlerSelector(
+   23  	        defaultOperationDelegate: ApplicationContext.operationDelegate
+   24  	    )
+   25  	    services.forEach { service in
+   26  	        handlerSelector.addHandlerForUri(service.path, httpMethod: service.method, handler: service.type.serviceHandler)
+   27  	    }
+   28  	    return handlerSelector
+   29  	}
+   30  	
+   31  	do {
+-> 32  	    Log.info("Starting Server")
+   33  	    Log.info("Verifying shell availability.  Hostname = \(shell.hostname())")
+   34  	    let handlerSelector = createHandlerSelector()
+   35  	    let server = try SmokeHTTP1Server.startAsOperationServer(
+   36  	        withHandlerSelector: handlerSelector,
+   37  	        andContext: ApplicationContext()
+   38  	    )
+   39  	    try server.waitUntilShutdownAndThen {
+   40  	        Log.info("shutdown server = \(server)")
+   41  	    }
+   42  	    Log.info("started server = \(server)")
+   43  	} catch {
+   44  	    Log.error("Unable to start Operation Server: '\(error)'")
+   45  	}
+Target 0: (echoserver) stopped.
+```
+
+You are now debugging the echo server running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then at the connect command in lldb on your mac, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
+
+*NB* there is no need to copy the arm executable from the mac to the Pi.  Start lldb as above with the command:
+
+`lldb ./.build/aarch64-unknown-linux/debug/echoserver`
+
+And follow the steps as above.
+
 ## Explanation
 
 So what’s happening here is that I have modified the work of Johannes Weiss and Helge Hess to create the cross compilers.  If you are curious about how that works the repo is [here](https://github.com/CSCIX65G/swift-mac2arm-x-compile-toolchain) . 
 
 One of the outputs of that process, when the cross compilers are built for Ubuntu 18.04 (bionic), is that all of the shlibs that Swift requires in order to link swift-compiled programs at run time on bionic can be determined by looking at the libraries produced in the cross-compiler SDK and can then be downloaded and assembled into a single runtime.tar.gz file.  
 
-Note that, ubuntu 18.04 is *NOT* required as part of all this.  The idea is to run swift programs without the weight of a full linux distribution (i.e. distro-less).  Once we provide a complete set of libs drawn from any OS, then it is as if we had statically linked the executable, only we don’t have to include those libs in every docker image.
+Note that, ubuntu 18.04 is *NOT* required as part of all this.  (Well ok at the moment a minimal ubuntu is need ed for the lldb-server, but even that is unmodified). 
 
-Once I did that, I realized that I could construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo will (soonish) host a docker image which can remotely debug cross-compiled swift programs as well.
+The idea is to run swift programs without the weight of a full linux distribution (i.e. distro-less).  Once we provide a complete set of libs drawn from any OS, then it is as if we had statically linked the executable, only we don’t have to include those libs in every docker image.
+
+Once I had done that, I realized that I could construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo will (soonish) host a docker image which can remotely debug cross-compiled swift programs as well.
 
 Then I realized that I can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes and you can run fast, small and secure swift applications.
 
