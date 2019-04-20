@@ -144,22 +144,24 @@ So what’s happening here is that I have modified the work of Johannes Weiss an
 
 One of the outputs of that process, when the cross compilers are built for Ubuntu 18.04 (bionic), is that all of the shlibs that Swift requires in order to link swift-compiled programs at run time on bionic can be determined by looking at the libraries produced in the cross-compiler SDK and can then be downloaded and assembled into a single runtime.tar.gz file.  
 
-Note that, ubuntu 18.04 is *NOT* required as part of all this.  (Well ok at the moment a minimal ubuntu is need ed for the lldb-server, but even that is unmodified). 
+Note that, ubuntu 18.04 is *NOT* required as part of all this.  (Well ok at the moment a minimal ubuntu is needed for the lldb-server, but even that is unmodified and should go away soon(ish)). 
 
 The idea is to run swift programs without the weight of a full linux distribution (i.e. distro-less).  Once we provide a complete set of libs drawn from any OS, then it is as if we had statically linked the executable, only we don’t have to include those libs in every docker image.
 
-Once I had done that, I realized that I could construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo will (soonish) host a docker image which can remotely debug cross-compiled swift programs as well.
+To do that we construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo also hosts docker images which can be used to remotely debug cross-compiled swift programs as well.
 
-Then I realized that I can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes and you can run fast, small and secure swift applications.
+Once we can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes, thenyou can run fast, small and secure swift applications.
 
 That’s the current state of the world.  Will be interested in people’s feedback.
 
 ## To do
 
-1. Extend the previous lld-server work I did in January to run distro-less on all platforms as well.
+1. The next big to do is to get all of this working with VS Code.  I’ve tried getting [this](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) working, but so far no dice with remote lldb debugging.  If it could be combined with [this](https://marketplace.visualstudio.com/items?itemName=vknabel.vscode-swift-development-environment) we’d have a decent Mac IDE for swift.
+
+2. Extend the previous lld-server work I did in January to run distro-less on all platforms as well.
  
-2. Figure out how to run amd64 tests easily on a mac
+3. Figure out how to run amd64 tests easily on a mac
  
-3. Get the armv7 cross-compiler working so that people can run this stuff on Raspbian and Yocto Linux
+4. Get the armv7 cross-compiler working so that people can run this stuff on Raspbian and Yocto Linux
  
-4. Ditto for armv6, so that swift code can be easily deployed to the R Pi Zero series
+5. Ditto for armv6, so that swift code can be easily deployed to the R Pi Zero series
