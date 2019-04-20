@@ -91,7 +91,7 @@ CONTAINER ID        IMAGE                                 COMMAND               
 44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
 
 ```
-Note that we now have a container called `lld-server`.  Also note that we have started this process will claiming  the 8080 port and that it is therefore incompatible with running the `echoserver` container at the same time.  If you want to play with the debugger, you’ll need to kill the `echoserver` with `docker stop echoserver` .  
+Note that we now have a container called `lld-server`.  Also note that while starting this process we have claimed  the 8080 port and that it is therefore incompatible with running the `echoserver` container at the same time.  If you want to play with the debugger, you’ll need to kill the `echoserver` with `docker stop echoserver` .  Hopefully this can be changed in future versions of this repo.
 
 Once the lldb_server instance is up, then you can do the following:
 
