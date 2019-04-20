@@ -52,7 +52,9 @@ Congrats, you have successfully cross-compiled for amd64.  This docker image can
 
 ## Running in Docker on the Raspberry Pi
 
-*NB* For now, you _*MUST*_ be running a 64 bit OS such as Ubuntu or Debian on your Pi to follow these steps.   Also note that which 64-bit OS you are running is immaterial.  Also note that everything _should_ run on any single board computer with an arm64v8 processor provided you are running a 64-bit LInux OS and have docker installed, because the entire process is independent of the underlying OS.
+*NB* For now, you _*MUST*_ be running a 64 bit OS such as Ubuntu or Debian on your Pi to follow these steps.   If you don’t know if you are running a 32-bit or 64-bit OS, you are almost certainly running 32-bit and will need to change this.
+
+Also note that which 64-bit OS you are running is immaterial.  Also note that everything _should_ run on any single board computer with an arm64v8 processor provided you are running a 64-bit LInux OS and have docker installed, because the entire process is independent of the underlying OS.
  
 Unfortunately, I’m still working on the 32-bit version of the cross compiler. There don’t seem to be insuperable difficulties here, I just need to figure out which pieces are missing and build the cross-compiler and docker run-time images.  Sorry, but such is life in the open source world.
 
@@ -62,11 +64,11 @@ Build the docker container with:
 
 `build-arm64.sh`
 
-This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.  Also move the _run-arm64.sh_ and `test.sh` scripts to the Pi.  On your Pi, execute the run script.  Test as above.
+This will produce a docker image called _echoserver:arm64-latest_.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the _run-arm64.sh_ and `test.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `test.sh` above.
 
 ## Debugging
 
-On your mac, do the following:
+To debug the amd64 code on your mac, do the following:
 
 `debug-server-amd64.sh`
 
@@ -78,7 +80,7 @@ CONTAINER ID        IMAGE                                 COMMAND               
 44dc506ffecd        cscix65g/swift-runtime:amd64-latest   "/lib/x86_64-linux-g…"   19 minutes ago      Exited (0) 19 minutes ago                                                              swift_runtime
 
 ```
-Note that this process will use the 8080 port and be incompatible with running the echoserver container at the same time.  You’ll need to kill it with `docker stop echoserver` if you want to play with the debugger.  If the lldb_server instance is up, then you can do the following:
+Note that this process will use the 8080 port and therefore be incompatible with running the echoserver container at the same time.  If you want to play with the debugger, you’ll need to kill the echoserver with `docker stop echoserver` .  If the lldb_server instance is up, then you can do the following:
 
 ` lldb ./.build/x86_64-unknown-linux/debug/echoserver`
 
@@ -130,9 +132,11 @@ Process 20 stopped
 Target 0: (echoserver) stopped.
 ```
 
-You are now debugging the echo server running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then at the connect command in lldb on your mac, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
+You are now debugging the echo server running inside a docker container on your mac.  To do this on your Pi, you simply need to transport the `debug-server-arm64.sh` script to your Pi and run it.  Then, back on your mac, at the connect command in lldb, substitute the hostname or IP address of your Pi and you’ll be remotely debugging the echoserver on the Pi.
 
-*NB* there is no need to copy the arm executable from the mac to the Pi.  On your _mac_ build the Pi executable with the command:
+*NB* there is no need to copy the arm executable from the mac to the Pi as lldb on your mac will copy it as part of running it.  (This is one _really_ good reason for making your executables very small, the copy process is painfully slow).
+
+On your _mac_ build the Pi executable with the command:
 
 ```
 ./build-arm64.sh
@@ -167,15 +171,15 @@ The idea is to run swift programs without the weight of a full linux distributio
 
 To do that we construct docker images of just those files + the Ubuntu loader.  If you are interested in what _that_ looks like, the repository is [here](https://github.com/CSCIX65G/swift-remote-debug)  That repo also hosts docker images which can be used to remotely debug cross-compiled swift programs as well.
 
-Once we can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes, thenyou can run fast, small and secure swift applications.
+Once we can run swift programs in ‘distro-less’ mode so that all you need is the executable output of the cross compiler in a docker container which mounts the swift_runtime volumes, then you can run fast, small and secure swift applications.
 
 That’s the current state of the world.  Will be interested in people’s feedback.
 
 ## To do
 
-1. The next big to do is to get all of this working with VS Code.  I’ve tried getting [this](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) working, but so far no dice with remote lldb debugging.  If it could be combined with [this](https://marketplace.visualstudio.com/items?itemName=vknabel.vscode-swift-development-environment) we’d have a decent Mac IDE for swift.  The big thing on the debugger is that it seems to not understand the remote commands properly.
+1. The next big to do is to get all of this working with VS Code.  I’ve tried getting [this](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) working, but so far no dice with remote lldb debugging.  If it could be combined with [this](https://marketplace.visualstudio.com/items?itemName=vknabel.vscode-swift-development-environment) we’d have a decent Mac IDE for swift on the R/Pi.  The big thing on the debugger is that it seems to not understand the remote commands properly.
 
-2. Extend the previous lld-server work I did in January to run distro-less on all platforms as well.
+2. Extend the previous lld-server work I did in January to run distro-less lldb-server on all platforms as well.
  
 3. Figure out how to run amd64 tests easily on a mac
  
