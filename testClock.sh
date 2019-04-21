@@ -1,19 +1,11 @@
 #!/bin/sh
-echo "Running test of echo server"
+echo "Running test of clock server"
 echo ""
 echo "Output:"
-curl -X "POST" "http://localhost:8080/clock" \
-     -H 'Content-Type: text/plain; charset=utf-8' \
-     -d $'{
-  "clockState": "on"
-}'
+curl -X "POST" "http://localhost:8080/clock" -H 'Content-Type: text/plain; charset=utf-8' -d $'{ "clockState": "on" }'
 echo ""
 sleep 5
-curl -X "POST" "http://localhost:8080/clock" \
-     -H 'Content-Type: text/plain; charset=utf-8' \
-     -d $'{
-  "clockState": "off"
-}'
+curl -X "POST" "http://localhost:8080/clock" -H 'Content-Type: text/plain; charset=utf-8' -d $'{ "clockState": "on" }'
 echo ""
 
 
