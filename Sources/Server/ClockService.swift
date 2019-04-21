@@ -39,7 +39,7 @@ struct ClockService: Service {
 
     // decode the input stream from the request
     static let inputDecoder = { (request: SmokeHTTP1RequestHead, data: Data?) throws -> ClockInput in
-        Log.debug("Handling ClockService request: \(request)")
+        Log.info("Handling ClockService request: \(request)")
         guard let data = data, let decoded = String(data: data, encoding: .utf8) else {
             Log.error("No request body for request \(request)")
             throw ApplicationContext.allowedErrors[0].0
@@ -51,9 +51,9 @@ struct ClockService: Service {
     typealias ClockResultHandler = (SmokeResult<ClockOutput>) -> Void
     static let transform = { (input: ClockInput, context: ApplicationContext) -> ClockOutput in
         let output = ClockOutput(clockState: input.clockState)
-        Log.debug("Transforming ClockService Input: \(input)")
+        Log.info("Transforming ClockService Input: \(input)")
         guard let shield = shield, let display = display else {
-            Log.debug("Shield or Display note available.  Completing transform")
+            Log.info("Shield or Display note available.  Completing transform")
             return ClockOutput(clockState: "off")
         }
         if input.isOn {
@@ -66,7 +66,7 @@ struct ClockService: Service {
             timer?.invalidate()
             timer = nil
         }
-        Log.debug("Finished Transforming ClockService Input: \(input) to Output: \(output)")
+        Log.info("Finished Transforming ClockService Input: \(input) to Output: \(output)")
         return output
     }
     
@@ -84,7 +84,7 @@ struct ClockService: Service {
             additionalHeaders: [],
             body: body
         )
-        Log.debug("Encoding ClockService Output: \(response)")
+        Log.info("Encoding ClockService Output: \(response)")
         responseHandler.completeInEventLoop(status: responseCode, responseComponents: response)
     }
     
