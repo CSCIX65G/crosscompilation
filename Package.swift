@@ -12,7 +12,15 @@ let dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/IBM-Swift/HeliumLogger.git", .branch("master"))
 ]
 
-let serverTargetDependencies: [Target.Dependency] = ["Service", "EchoService", "HeliumLogger", "Shell", "SwiftyLinkerKit", "GATT"]
+let serverTargetDependencies: [Target.Dependency] = [
+    "SmokeService",
+    "EchoService",
+    "HeliumLogger",
+    "Shell",
+    "SwiftyLinkerKit",
+    "GATT",
+    "BluetoothLinux"
+]
 
 let package = Package(
     name: "echoserver",
@@ -20,13 +28,14 @@ let package = Package(
         .executable(
             name: "echoserver",
             targets: [
-                "Service",
+                "SmokeService",
                 "EchoService",
                 "Server",
             ]
         ),
-        .library(name: "Service", targets: ["Service"]),
-        .library(name: "EchoService", targets: ["EchoService", "Service"]),
+        .library(name: "SmokeService", targets: ["SmokeService"]),
+        .library(name: "ClockService", targets: ["ClockService", "SmokeService"]),
+        .library(name: "BluetootService", targets: ["BluetoothService", "SmokeService"]),
     ],
     dependencies: dependencies,
     targets: [
@@ -36,10 +45,18 @@ let package = Package(
         ),
         .target(
             name: "EchoService",
-            dependencies: ["Service", "SmokeOperations", "SmokeHTTP1", "SmokeOperationsHTTP1"]
+            dependencies: ["SmokeService"]
         ),
         .target(
-            name: "Service",
+            name: "ClockService",
+            dependencies: ["SmokeService"]
+        ),
+        .target(
+            name: "BluetoothService",
+            dependencies: ["SmokeService"]
+        ),
+        .target(
+            name: "SmokeService",
             dependencies: ["SmokeOperations", "SmokeHTTP1", "SmokeOperationsHTTP1"]
         ),
         .testTarget(

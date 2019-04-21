@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::EchoService"
-               BuildableName = "EchoService.framework"
-               BlueprintName = "EchoService"
+               BlueprintIdentifier = "echoserver::BluetoothService"
+               BuildableName = "BluetoothService.framework"
+               BlueprintName = "BluetoothService"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::Service"
-               BuildableName = "Service.framework"
-               BlueprintName = "Service"
+               BlueprintIdentifier = "echoserver::SmokeService"
+               BuildableName = "SmokeService.framework"
+               BlueprintName = "SmokeService"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,6 +45,34 @@
                BlueprintIdentifier = "echoserver::Server"
                BuildableName = "Server"
                BlueprintName = "Server"
+               ReferencedContainer = "container:echoserver.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "echoserver::ClockService"
+               BuildableName = "ClockService.framework"
+               BlueprintName = "ClockService"
+               ReferencedContainer = "container:echoserver.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "echoserver::EchoService"
+               BuildableName = "EchoService.framework"
+               BlueprintName = "EchoService"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -83,9 +111,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "echoserver::EchoService"
-            BuildableName = "EchoService.framework"
-            BlueprintName = "EchoService"
+            BlueprintIdentifier = "echoserver::BluetoothService"
+            BuildableName = "BluetoothService.framework"
+            BlueprintName = "BluetoothService"
             ReferencedContainer = "container:echoserver.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

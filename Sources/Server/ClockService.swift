@@ -1,8 +1,8 @@
 //
-//  EchoService.swift
-//  Services
+//  ClockService.swift
+//  Server
 //
-//  Created by Van Simmons on 2/7/19.
+//  Created by Van Simmons on 4/21/19.
 //
 
 import Foundation
@@ -14,7 +14,7 @@ import NIOHTTP1
 import SmokeService
 import EchoService
 
-struct EchoService: Service {
+struct ClockService: Service {
     typealias InputType = EchoInput
     typealias OutputType = EchoOutput
     

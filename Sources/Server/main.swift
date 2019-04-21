@@ -4,7 +4,7 @@ import SmokeOperationsHTTP1
 import NIOHTTP1
 import HeliumLogger
 import LoggerAPI
-import Service
+import SmokeService
 import Shell
 
 typealias SmokeHandlerSelector = StandardSmokeHTTP1HandlerSelector
