@@ -58,8 +58,10 @@ struct ClockService: Service {
         }
         if input.isOn {
             display.show(9999)
-            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (t) in
-                display.show(df.string(from:Date()))
+            OperationQueue.main.addOperation {
+                timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (t) in
+                    display.show(df.string(from:Date()))
+                }
             }
         } else {
             display.turnOff()
