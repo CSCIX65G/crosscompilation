@@ -14,11 +14,13 @@ struct GPIOInput {
     static let logger = HeliumLogger()
     static let button = LKButton2()
     static let touchSensor = LKButton2()
+    static let pot = LKTemp()
 
     static func handleButtons() {
         guard let shield  = LKRBShield.default else { return }
         Log.logger = logger
 
+        // Button
         shield.connect(button, to: .digital2627)
         button.onPress1 {
             Log.info("Button 1 was pressed!")
@@ -28,6 +30,7 @@ struct GPIOInput {
             Log.info("Button 1 changed, it is now: \(isPressed ? "pressed" : "off" )")
         }
 
+        // Touch Sensor
         shield.connect(touchSensor, to: .digital2122)
         touchSensor.onPress1 {
             Log.info("Sensor was touched!")
@@ -35,6 +38,13 @@ struct GPIOInput {
         touchSensor.onChange1 { isPressed in
             Log.info("Sensor changed, it is now: \(isPressed ? "touched" : "off" )")
             LEDService.led.on = !LEDService.led.on
+        }
+        
+        // Potentiometer
+        shield.connect(pot, to: .analog45)
+        pot.onChange { (newValue) in
+            Log.info("Potentiometer changed, it is now: \(newValue)")
+            ClockService.display?.show(Int(newValue))
         }
     }
 }
