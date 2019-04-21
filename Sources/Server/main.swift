@@ -13,9 +13,12 @@ typealias HandlerSelector = StandardSmokeHTTP1HandlerSelector<ApplicationContext
 let logger = HeliumLogger()
 Log.logger = logger
 
+let clockTimer = DispatchSource.makeTimerSource()
+
 let services = [
     (path: "/echo", method: HTTPMethod.POST, handler: EchoService.self.serviceHandler),
-    (path: "/clock", method: HTTPMethod.POST, handler: ClockService.self.serviceHandler)
+    (path: "/clock", method: HTTPMethod.POST, handler: ClockService.self.serviceHandler),
+    (path: "/led", method: HTTPMethod.POST, handler: LEDService.self.serviceHandler)
 ]
 
 func createHandlerSelector() -> HandlerSelector {
@@ -28,9 +31,28 @@ func createHandlerSelector() -> HandlerSelector {
     return handlerSelector
 }
 
+func startClockTimer() {
+    clockTimer.setEventHandler {
+        guard let display = ClockService.display else { return }
+        if ClockService.clockState {
+            display.show(ClockService.df.string(from:Date()))
+        }
+    }
+    
+    clockTimer.schedule(deadline  : .now(),
+                   repeating : .seconds(1),
+                   leeway    : .milliseconds(1))
+    clockTimer.resume()
+}
+
 do {
     Log.info("Starting Server")
     Log.info("Verifying shell availability.  Hostname = \(shell.hostname())")
+    
+    // GPIO related startup
+    startClockTimer()
+    GPIOInput.handleButtons()
+    
     let handlerSelector = createHandlerSelector()
     let server = try SmokeHTTP1Server.startAsOperationServer(
         withHandlerSelector: handlerSelector,
