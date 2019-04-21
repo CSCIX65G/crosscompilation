@@ -14,7 +14,7 @@ struct GPIOInput {
     static let logger = HeliumLogger()
     static let button = LKButton2()
     static let touchSensor = LKButton2()
-    static let pot = LKTemp()
+    static let pot = LKTemp(interval: 0.2, valueType: .voltage)
 
     static func handleButtons() {
         guard let shield  = LKRBShield.default else { return }
@@ -44,7 +44,7 @@ struct GPIOInput {
         shield.connect(pot, to: .analog45)
         pot.onChange { (newValue) in
             Log.info("Potentiometer changed, it is now: \(newValue)")
-            ClockService.display?.show(Int(newValue))
+            ClockService.display?.show(Int(newValue*100))
         }
     }
 }
