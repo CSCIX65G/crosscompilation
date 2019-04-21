@@ -40,11 +40,11 @@ struct ClockService: Service {
     // decode the input stream from the request
     static let inputDecoder = { (request: SmokeHTTP1RequestHead, data: Data?) throws -> ClockInput in
         Log.info("Handling ClockService request: \(request)")
-        guard let data = data, let decoded = String(data: data, encoding: .utf8) else {
+        guard let data = data, let decoded = ClockInput(data: data) else {
             Log.error("No request body for request \(request)")
             throw ApplicationContext.allowedErrors[0].0
         }
-        return ClockInput(clockState: decoded)
+        return decoded
     }
     
     // transform the input into the output
