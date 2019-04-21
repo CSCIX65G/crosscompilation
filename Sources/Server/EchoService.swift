@@ -11,8 +11,6 @@ import SmokeOperations
 import SmokeOperationsHTTP1
 import LoggerAPI
 import NIOHTTP1
-import SmokeService
-import EchoService
 
 struct EchoService: Service {
     typealias InputType = EchoInput

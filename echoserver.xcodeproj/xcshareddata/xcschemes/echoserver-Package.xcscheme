@@ -14,65 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::BluetoothService"
-               BuildableName = "BluetoothService.framework"
-               BlueprintName = "BluetoothService"
-               ReferencedContainer = "container:echoserver.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::SmokeService"
-               BuildableName = "SmokeService.framework"
-               BlueprintName = "SmokeService"
-               ReferencedContainer = "container:echoserver.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
                BlueprintIdentifier = "echoserver::Server"
                BuildableName = "Server"
                BlueprintName = "Server"
-               ReferencedContainer = "container:echoserver.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::ClockService"
-               BuildableName = "ClockService.framework"
-               BlueprintName = "ClockService"
-               ReferencedContainer = "container:echoserver.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "echoserver::EchoService"
-               BuildableName = "EchoService.framework"
-               BlueprintName = "EchoService"
                ReferencedContainer = "container:echoserver.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -108,15 +52,16 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "echoserver::BluetoothService"
-            BuildableName = "BluetoothService.framework"
-            BlueprintName = "BluetoothService"
+            BlueprintIdentifier = "echoserver::Server"
+            BuildableName = "Server"
+            BlueprintName = "Server"
             ReferencedContainer = "container:echoserver.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
       <AdditionalOptions>
       </AdditionalOptions>
    </LaunchAction>

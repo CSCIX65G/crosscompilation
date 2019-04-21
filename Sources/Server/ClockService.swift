@@ -11,39 +11,70 @@ import SmokeOperations
 import SmokeOperationsHTTP1
 import LoggerAPI
 import NIOHTTP1
-import SmokeService
-import EchoService
+import Dispatch
+import SwiftyLinkerKit
 
 struct ClockService: Service {
-    typealias InputType = EchoInput
-    typealias OutputType = EchoOutput
+    typealias InputType = ClockInput
+    typealias OutputType = ClockOutput
     
     static let jsonEncoder = JSONEncoder()
     static let jsonDecoder = JSONDecoder()
+    static let shield  = LKRBShield.default
+    static let smallShield  = LKRBShield.default
+    static var timer: Timer?
     
+    static let display:LKDigi? = {
+        guard let shield = shield else { return nil }
+        let d = LKDigi()
+        shield.connect(d, to: .digital45)
+        return d
+    }()
+
+    static let df: DateFormatter = {
+        let d = DateFormatter()
+        d.dateFormat = "mmss"
+        return d
+    }()
+
     // decode the input stream from the request
-    static let inputDecoder = { (request: SmokeHTTP1RequestHead, data: Data?) throws -> EchoInput in
-        Log.debug("Handling EchoService request: \(request)")
+    static let inputDecoder = { (request: SmokeHTTP1RequestHead, data: Data?) throws -> ClockInput in
+        Log.debug("Handling ClockService request: \(request)")
         guard let data = data, let decoded = String(data: data, encoding: .utf8) else {
             Log.error("No request body for request \(request)")
             throw ApplicationContext.allowedErrors[0].0
         }
-        return EchoInput(input: decoded)
+        return ClockInput(clockState: decoded)
     }
     
     // transform the input into the output
-    typealias EchoResultHandler = (SmokeResult<EchoOutput>) -> Void
-    static let transform = { (input: EchoInput, context: ApplicationContext) -> EchoOutput in
-        let output = EchoOutput(output: input.input)
-        Log.debug("Transforming EchoService Input: \(input) to Output: \(output)")
+    typealias ClockResultHandler = (SmokeResult<ClockOutput>) -> Void
+    static let transform = { (input: ClockInput, context: ApplicationContext) -> ClockOutput in
+        let output = ClockOutput(clockState: input.clockState)
+        Log.debug("Transforming ClockService Input: \(input)")
+        guard let shield = shield, let display = display else {
+            Log.debug("Shield or Display note available.  Completing transform")
+            return ClockOutput(clockState: "off")
+        }
+        if input.isOn {
+            display.show(9999)
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { (t) in
+                display.show(df.string(from:Date()))
+            }
+        } else {
+            display.turnOff()
+            timer?.invalidate()
+            timer = nil
+        }
+        Log.debug("Finished Transforming ClockService Input: \(input) to Output: \(output)")
         return output
     }
     
     // encode the output into the response
-    static let outputEncoder = { (request: SmokeHTTP1RequestHead, output: EchoOutput, responseHandler: HTTP1ResponseHandler) in
+    static let outputEncoder = { (request: SmokeHTTP1RequestHead, output: ClockOutput, responseHandler: HTTP1ResponseHandler) in
         var body = ( contentType: "application/json", data: Data() )
         var responseCode = HTTPResponseStatus.ok
-        if let encoded = output.output.data(using: .utf8)  {
+        if let encoded = output.clockState.data(using: .utf8)  {
             body = ( contentType: "application/json", data: encoded )
         } else {
             responseCode = HTTPResponseStatus.internalServerError
@@ -53,14 +84,14 @@ struct ClockService: Service {
             additionalHeaders: [],
             body: body
         )
-        Log.debug("Encoding EchoService Output: \(response)")
+        Log.debug("Encoding ClockService Output: \(response)")
         responseHandler.completeInEventLoop(status: responseCode, responseComponents: response)
     }
     
     static let serviceHandler = OperationHandler<ApplicationContext, SmokeHTTP1RequestHead, HTTP1ResponseHandler>(
-        inputProvider: EchoService.inputDecoder,
-        operation: EchoService.transform,
-        outputHandler: EchoService.outputEncoder,
+        inputProvider: ClockService.inputDecoder,
+        operation: ClockService.transform,
+        outputHandler: ClockService.outputEncoder,
         allowedErrors: ApplicationContext.allowedErrors,
         operationDelegate: ApplicationContext.operationDelegate
     )

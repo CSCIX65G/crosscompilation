@@ -13,11 +13,12 @@ let dependencies: [PackageDescription.Package.Dependency] = [
 ]
 
 let serverTargetDependencies: [Target.Dependency] = [
-    "SmokeService",
-    "EchoService",
     "HeliumLogger",
     "Shell",
     "SwiftyLinkerKit",
+    "SmokeOperations",
+    "SmokeHTTP1",
+    "SmokeOperationsHTTP1",
     "GATT",
     "BluetoothLinux"
 ]
@@ -28,36 +29,15 @@ let package = Package(
         .executable(
             name: "echoserver",
             targets: [
-                "SmokeService",
-                "EchoService",
                 "Server",
             ]
         ),
-        .library(name: "SmokeService", targets: ["SmokeService"]),
-        .library(name: "ClockService", targets: ["ClockService", "SmokeService"]),
-        .library(name: "BluetootService", targets: ["BluetoothService", "SmokeService"]),
     ],
     dependencies: dependencies,
     targets: [
         .target(
             name: "Server",
             dependencies: serverTargetDependencies
-        ),
-        .target(
-            name: "EchoService",
-            dependencies: ["SmokeService"]
-        ),
-        .target(
-            name: "ClockService",
-            dependencies: ["SmokeService"]
-        ),
-        .target(
-            name: "BluetoothService",
-            dependencies: ["SmokeService"]
-        ),
-        .target(
-            name: "SmokeService",
-            dependencies: ["SmokeOperations", "SmokeHTTP1", "SmokeOperationsHTTP1"]
         ),
         .testTarget(
             name: "ServerTests",

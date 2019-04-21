@@ -4,7 +4,6 @@ import SmokeOperationsHTTP1
 import NIOHTTP1
 import HeliumLogger
 import LoggerAPI
-import SmokeService
 import Shell
 
 typealias SmokeHandlerSelector = StandardSmokeHTTP1HandlerSelector
@@ -15,7 +14,8 @@ let logger = HeliumLogger()
 Log.logger = logger
 
 let services = [
-    (path: "/echo", method: HTTPMethod.POST, type: EchoService.self)
+    (path: "/echo", method: HTTPMethod.POST, handler: EchoService.self.serviceHandler),
+    (path: "/clock", method: HTTPMethod.POST, handler: ClockService.self.serviceHandler)
 ]
 
 func createHandlerSelector() -> HandlerSelector {
@@ -23,7 +23,7 @@ func createHandlerSelector() -> HandlerSelector {
         defaultOperationDelegate: ApplicationContext.operationDelegate
     )
     services.forEach { service in
-        handlerSelector.addHandlerForUri(service.path, httpMethod: service.method, handler: service.type.serviceHandler)
+        handlerSelector.addHandlerForUri(service.path, httpMethod: service.method, handler: service.handler)
     }
     return handlerSelector
 }
