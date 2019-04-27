@@ -18,11 +18,26 @@ if [ ! "$(docker ps --all -q -f name=swift_runtime)" ]; then
 	docker volume rm swift_debug >> /dev/null
     fi
     docker volume create swift_debug
-    docker run --name swift_runtime -v swift_runtime_lib:/lib -v swift_runtime_usr_lib:/usr/lib -v swift_runtime_usr_bin:/usr/bin -d cscix65g/swift-runtime:amd64-latest
+    docker run \
+           --detach \
+           --name swift_runtime \
+           -v swift_runtime_lib:/lib \
+           -v swift_runtime_usr_lib:/usr/lib \
+           -v swift_runtime_usr_bin:/usr/bin \
+           cscix65g/swift-runtime:amd64-latest
     docker logs swift_runtime
 fi
 docker stop echoserver || true >> /dev/null
-docker run --rm -d --name echoserver -p 8080:8080 --volumes-from swift_runtime echoserver:amd64-latest
+docker run \
+       --rm \
+       --detach \
+       --name echoserver \
+       -p 8080:8080 \
+       -v swift_runtime_lib:/swift_runtime/lib \
+       -v swift_runtime_usr_lib:/swift_runtime/usr/lib \
+       -v swift_runtime_usr_bin:/swift_runtime/usr/bin \
+       -v swift_debug:/swift_debug \
+       echoserver:amd64-latest
 docker ps --filter name=echoserver
 docker logs echoserver
 

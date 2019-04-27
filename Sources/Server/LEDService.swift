@@ -21,7 +21,6 @@ struct LEDService: Service {
     static let jsonEncoder = JSONEncoder()
     static let jsonDecoder = JSONDecoder()
     static let shield  = LKRBShield.default
-    static let smallShield  = LKRBShield.default
     static var ledState: Bool = false {
         didSet {
             led.on = ledState

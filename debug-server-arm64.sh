@@ -19,8 +19,26 @@ if [ ! "$(docker ps --all -q -f name=swift_runtime)" ]; then
 	docker volume rm swift_debug >> /dev/null
     fi
     docker volume create swift_debug
-    docker run --name swift_runtime -v swift_runtime_lib:/lib -v swift_runtime_usr_lib:/usr/lib -v swift_runtime_usr_bin:/usr/bin -d cscix65g/swift-runtime:arm64-latest
+    docker run \
+           --detach \
+           --name swift_runtime \
+           -v swift_runtime_lib:/lib \
+           -v swift_runtime_usr_lib:/usr/lib \
+           -v swift_runtime_usr_bin:/usr/bin \
+           cscix65g/swift-runtime:arm64-latest
     docker logs swift_runtime
 fi
-docker run --name lldb_server --detach --rm --privileged --network host --env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu -v swift_runtime_lib:/swift_runtime/lib -v swift_runtime_usr_lib:/swift_runtime/usr/lib -v swift_runtime_usr_bin:/swift_runtime/usr/bin -v swift_debug:/swift_debug cscix65g/lldb-server:arm64-latest
+export SWIFT_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu
+docker run \
+       --name lldb_server \
+       --detach \
+       --rm \
+       --privileged \
+       --network host \
+       --env LD_LIBRARY_PATH=$SWIFT_PATH \
+       -v swift_runtime_lib:/swift_runtime/lib \
+       -v swift_runtime_usr_lib:/swift_runtime/usr/lib \
+       -v swift_runtime_usr_bin:/swift_runtime/usr/bin \
+       -v swift_debug:/swift_debug \
+       cscix65g/lldb-server:arm64-latest
 

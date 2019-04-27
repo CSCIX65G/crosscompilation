@@ -11,7 +11,7 @@ You must have installed on your mac:
 
 Then, get and install the arm64 and amd64 cross compilers on your mac:
 
-[arm64](https://drive.google.com/file/d/16wtHZRcfkaMMq_53vMcBl1pt7hf_1K0l) 
+[arm64](https://drive.google.com/file/d/1QISJOh-yo8Rn1t470ltstmhYA3fU5VUV/view?usp=sharing) 
 
 [amd64](https://drive.google.com/open?id=1y-tX00iuLk6LVluAK7r13f30Up6Bya8N)
 
@@ -53,13 +53,13 @@ Note that `swift_runtime` is now available to be used by _ANY_ docker container,
     -v swift_runtime_usr_bin:/swift_runtime/usr/bin \
     --env LD_LIBRARY_PATH=/swift_runtime/usr/lib/swift/linux:/swift_runtime/usr/lib/aarch64-linux-gnu:/swift_runtime/lib/aarch64-linux-gnu \
 
-When running a distro container, in order to have the appropriate shlibs available to swift programs.
+When running a distro container such as busybox, alpine or ubuntu, in order to have the appropriate shlibs available to swift programs.
 
 Another example which we will explore below is the lldb-server which will mount these same libs so that you can run a debugger remotely on your cross-compiled code.
 
 Test the echo server as above:
 
-`test.sh`
+`testEcho.sh`
 
 Congrats, you have successfully cross-compiled for amd64.  This docker image can be deployed to any amd64 cloud image (with docker installed) if you like by simply running the commands in the run script.
 
@@ -67,7 +67,7 @@ Congrats, you have successfully cross-compiled for amd64.  This docker image can
 
 *NB* For now, you _*MUST*_ be running a 64 bit OS such as Ubuntu or Debian on your Pi to follow these steps.   If you don’t know if you are running a 32-bit or 64-bit OS, you are almost certainly running 32-bit and will need to change this.
 
-Also note that which 64-bit OS you are running is immaterial.  Also note that everything _should_ run on any single board computer with an arm64v8 processor provided you are running a 64-bit LInux OS and have docker installed, because the entire process is independent of the underlying OS.
+Also note that which 64-bit OS you are running is immaterial.  Everything _should_ run on any single board computer with an arm64v8 processor provided that you are running a 64-bit LInux OS and have docker installed, because the entire process is independent of the underlying OS.
  
 Unfortunately, I’m still working on the 32-bit version of the cross compiler. There don’t seem to be insuperable difficulties here, I just need to figure out which pieces are missing and build the cross-compiler and docker run-time images.  Sorry, but such is life in the open source world.
 
@@ -77,7 +77,7 @@ On your mac, build the arm64 docker container with:
 
 `build-arm64.sh`
 
-This will produce a docker image called `echoserver:arm64-latest`.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the `run-arm64.sh` and `test.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `test.sh` above.
+This will produce a docker image called `echoserver:arm64-latest`.  Move that image to the Pi in whatever way you normally would do, presumably through a docker registry.   Copy the `run-arm64.sh` and `testEcho.sh` scripts to the Pi.  You will need to modify `run-arm64.sh`  to run your own docker container as it is currently set up to run the version compiled by me and pushed to docker hub.  Execute either the default script or your own on your Pi.  Then test with `testEcho.sh` above.
 
 ## Debugging on the Mac
 
