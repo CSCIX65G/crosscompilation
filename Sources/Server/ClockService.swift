@@ -21,7 +21,6 @@ struct ClockService: Service {
     static let jsonEncoder = JSONEncoder()
     static let jsonDecoder = JSONDecoder()
     static let shield  = LKRBShield.default
-    static let smallShield  = LKRBShield.default
     static var clockState: Bool = false
     
     static let display:LKDigi? = {

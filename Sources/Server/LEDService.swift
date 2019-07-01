@@ -30,7 +30,7 @@ struct LEDService: Service {
     static let led:LKLed = {
         let l = LKLed()
         guard let shield = shield else { return l }
-        shield.connect(l, to: .digital1516)
+        shield.connect(l, to: .digital1314)
         return l
     }()
     

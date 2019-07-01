@@ -22,7 +22,7 @@ struct GPIOInput {
         Log.logger = logger
 
         // Button
-        shield.connect(button, to: .digital2627)
+        shield.connect(button, to: .digital1516)
         button.onPress1 {
             Log.info("Button 1 was pressed!")
             LEDService.led.on = !LEDService.led.on
@@ -32,7 +32,7 @@ struct GPIOInput {
         }
 
         // Touch Sensor
-        shield.connect(touchSensor, to: .digital2122)
+        shield.connect(touchSensor, to: .digital2627)
         touchSensor.onPress1 {
             Log.info("Sensor was touched!")
         }
@@ -42,7 +42,7 @@ struct GPIOInput {
         }
         
         // Potentiometer
-        shield.connect(pot, to: .analog45)
+        shield.connect(pot, to: .analog01)
         pot.onChange { (newValue) in
             let newIntValue = Int(newValue * 100.0)
             if newIntValue != self.potValue {

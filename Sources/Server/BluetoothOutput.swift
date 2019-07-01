@@ -2,10 +2,14 @@ import Foundation
 import SmokeOperations
 
 public struct BluetoothOutput: Codable, Validatable {
-    public let output: String
+    public let bluetoothState: String
     
-    public init(output: String) {
-        self.output = output
+    public init(bluetoothState: String) {
+        self.bluetoothState = bluetoothState
+    }
+    
+    public init(bluetoothState: Bool) {
+        self.bluetoothState = bluetoothState ? "on" : "off"
     }
     
     public func validate() throws { }
@@ -13,10 +17,10 @@ public struct BluetoothOutput: Codable, Validatable {
 
 extension BluetoothOutput : Equatable {
     public static func ==(lhs: BluetoothOutput, rhs: BluetoothOutput) -> Bool {
-        return lhs.output == rhs.output
+        return lhs.bluetoothState == rhs.bluetoothState
     }
 }
 
 extension BluetoothOutput: CustomStringConvertible {
-    public var description: String { return "BluetoothOutput(output: \"\(output)\")" }
+    public var description: String { return "BluetoothOutput(bluetoothState: \"\(bluetoothState)\")" }
 }

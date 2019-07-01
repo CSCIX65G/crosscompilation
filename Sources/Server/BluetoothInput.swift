@@ -2,10 +2,21 @@ import Foundation
 import SmokeOperations
 
 public struct BluetoothInput: Codable, Validatable {
-    public let input: String
+    static let jsonDecoder = JSONDecoder()
     
-    public init(input: String) {
-        self.input = input
+    public let bluetoothState: String
+    
+    var isOn: Bool { return bluetoothState == "on" }
+    
+    public init(bluetoothState: String) {
+        self.bluetoothState = bluetoothState.lowercased() == "on" ? "on" : "off"
+    }
+    
+    public init?(data: Data) {
+        guard let decodedSelf = try? BluetoothInput.jsonDecoder.decode(BluetoothInput.self, from: data) else {
+            return nil
+        }
+        self = decodedSelf
     }
     
     public func validate() throws {
@@ -15,10 +26,10 @@ public struct BluetoothInput: Codable, Validatable {
 
 extension BluetoothInput : Equatable {
     public static func ==(lhs: BluetoothInput, rhs: BluetoothInput) -> Bool {
-        return lhs.input == rhs.input
+        return lhs.bluetoothState == rhs.bluetoothState
     }
 }
 
 extension BluetoothInput: CustomStringConvertible {
-    public var description: String { return "BluetoothInput(input: \"\(input)\")" }
+    public var description: String { return "BluetoothInput(bluetoothState: \"\(bluetoothState)\")" }
 }
