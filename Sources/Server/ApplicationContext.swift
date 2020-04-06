@@ -16,4 +16,5 @@ public struct ApplicationContext {
     public static let operationDelegate = JSONPayloadHTTP1OperationDelegate();
 
     public init() {}
+    
 }
